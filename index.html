@@ -103,7 +103,7 @@
         .variant-img-box {
             width: 80px; height: 80px; flex-shrink: 0; background: #f9f9f9;
             border-radius: 6px; overflow: hidden; position: relative;
-            cursor: zoom-in; /* เพิ่ม cursor แว่นขยาย */
+            cursor: zoom-in;
             transition: opacity 0.2s;
         }
         .variant-img-box:hover { opacity: 0.8; }
@@ -112,11 +112,14 @@
         .variant-info { flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-start; }
         .badge-container { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
         .badge { font-size: 0.8rem; background: var(--tag-bg); color: #555; padding: 4px 10px; border-radius: 4px; border: 1px solid #eee; }
-        .variant-price { font-size: 1rem; font-weight: 600; color: var(--accent); margin-top: auto; }
+        
+        /* Price Styling Updated */
+        .variant-price { font-size: 1.1rem; font-weight: 600; color: var(--accent); margin-top: auto; display: flex; align-items: baseline; gap: 5px; }
+        .thb-price { font-size: 0.9rem; color: #999; font-weight: 400; }
 
-        /* --- Image Viewer Modal (New Feature) --- */
+        /* --- Image Viewer Modal --- */
         .img-viewer-modal {
-            background: rgba(0,0,0,0.95) !important; /* ดำสนิทเกือบ 100% */
+            background: rgba(0,0,0,0.95) !important;
             z-index: 1100;
         }
         .modal-full-img {
@@ -167,6 +170,8 @@
         // -------------------------------------------------------------
         // 👇 ลิงก์เดิมของคุณ (ไม่ต้องแก้)
         const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSsNmpYBJTnOp4Wa3lQy3VeTolxfSHKzRaXXGnM2k_C8iq0hYC4MlLLqSIb12Ml8fDDw6AhPp6ePFds/pub?gid=219602649&single=true&output=csv';
+        // 💰 เรตเงินเยน (แก้ไขตรงนี้ได้ถ้าเรตเปลี่ยน)
+        const RATE = 0.215;
         // -------------------------------------------------------------
 
         let allProducts = [];
@@ -224,7 +229,7 @@
             });
         }
 
-        // --- Logic ใหม่ของ Modal ---
+        // --- Logic ใหม่ของ Modal (เพิ่มคำนวณเงิน) ---
         window.openGroupModal = (title, items) => {
             document.getElementById('mTitle').innerText = title;
             const body = document.getElementById('mBody');
@@ -241,11 +246,24 @@
                 } else {
                     badgesHtml = `<span class="badge" style="background:transparent; padding-left:0; color:#ccc;">No description</span>`;
                 }
-                const priceHtml = item.JPY ? `¥${item.JPY}` : '';
+
+                // 💰 คำนวณเงินตรงนี้
+                let priceHtml = '';
+                if (item.JPY) {
+                    // ลบลูกน้ำออกก่อนคำนวณ
+                    const jpyVal = parseFloat(item.JPY.replace(/,/g, ''));
+                    if (!isNaN(jpyVal)) {
+                        const thbVal = Math.round(jpyVal * RATE);
+                        // จัดรูปแบบตัวเลขให้มีลูกน้ำ
+                        const thbStr = thbVal.toLocaleString('en-US');
+                        priceHtml = `¥${item.JPY} <span class="thb-price">(฿${thbStr})</span>`;
+                    } else {
+                        priceHtml = `¥${item.JPY}`;
+                    }
+                }
 
                 const row = document.createElement('div');
                 row.className = 'variant-item';
-                // เพิ่ม onclick ตรงรูปภาพ
                 row.innerHTML = `
                     <div class="variant-img-box">
                         <img src="${imgUrl}" class="variant-img" 
@@ -268,9 +286,9 @@
         }
         window.closeModalDirect = () => document.getElementById('groupModal').classList.remove('active');
 
-        // --- Image Viewer Logic (เพิ่มใหม่) ---
+        // --- Image Viewer Logic ---
         window.openImageViewer = (src) => {
-            if(src.includes('via.placeholder.com')) return; // ไม่ขยายรูป Placeholder
+            if(src.includes('via.placeholder.com')) return;
             const imgModal = document.getElementById('imageViewerModal');
             const fullImg = document.getElementById('fullImage');
             fullImg.src = src;
