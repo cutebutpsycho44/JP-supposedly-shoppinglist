@@ -3,125 +3,255 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Minimal Shopping List 🇯🇵</title>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <title>Shopping List</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* === Minimal Color Palette === */
+        /* === Clean & Minimal Palette === */
         :root {
-            --bg-color: #FDFBF7;
+            --bg-color: #FAFAFA; /* พื้นหลังขาวนวล */
             --card-bg: #FFFFFF;
-            --text-primary: #4A4A4A;
-            --text-secondary: #8C8C8C;
-            --accent-color: #A67B5B;
-            --border-color: #EFEFEF;
-            --badge-bg: #F0EAE4;
+            --text-main: #333333;
+            --text-sub: #757575;
+            --accent: #8D6E63; /* น้ำตาลสุภาพ */
+            --border: #E0E0E0;
+            --tag-bg: #F5F5F5;
         }
 
-        body { font-family: 'Prompt', sans-serif; background-color: var(--bg-color); color: var(--text-primary); margin: 0; padding-bottom: 100px; -webkit-tap-highlight-color: transparent; }
-        .header { background: var(--card-bg); padding: 20px 25px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border-color); }
-        .header h1 { margin: 0; font-size: 1.4rem; font-weight: 600; color: var(--text-primary); letter-spacing: 0.5px; }
-        .header-stats { margin-top: 8px; font-size: 0.9rem; color: var(--text-secondary); display: flex; justify-content: space-between; }
-        .header-stats b { color: var(--accent-color); }
+        body {
+            font-family: 'Sarabun', sans-serif; /* ฟอนต์ใหม่ */
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding-bottom: 50px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* --- Header เรียบๆ --- */
+        .header {
+            background: var(--card-bg);
+            padding: 20px 25px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        /* --- Search Bar --- */
         .search-container { margin-top: 15px; }
-        .search-box { width: 100%; padding: 12px 15px; border: 1px solid var(--border-color); border-radius: 25px; font-family: 'Prompt'; font-size: 0.95rem; background: var(--bg-color); outline: none; transition: all 0.2s; }
-        .search-box:focus { border-color: var(--accent-color); background: #fff; }
+        .search-box {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Sarabun';
+            font-size: 0.95rem;
+            background: #F9F9F9;
+            outline: none;
+            box-sizing: border-box;
+        }
+        .search-box:focus { background: #fff; border-color: var(--accent); }
+
+        /* --- Main List Container --- */
         .container { max-width: 600px; margin: 20px auto; padding: 0 20px; }
-        .group-header { margin-top: 30px; margin-bottom: 15px; color: var(--text-secondary); font-weight: 500; font-size: 1rem; display: flex; align-items: center; text-transform: uppercase; letter-spacing: 1px; }
-        .group-header i { margin-right: 10px; color: var(--accent-color); opacity: 0.7; }
-        .item-card { background: var(--card-bg); border-radius: 12px; padding: 18px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid var(--border-color); transition: all 0.2s; }
-        .item-card:active { background-color: #fafafa; transform: scale(0.99); }
-        .item-card.completed { opacity: 0.6; background: #f9f9f9; }
-        .item-card.completed .item-name { text-decoration: line-through; color: var(--text-secondary); }
-        .checkbox-area { padding: 5px; margin-right: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .custom-checkbox { width: 24px; height: 24px; border: 2px solid #CFD8DC; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: white; }
-        .item-card.completed .custom-checkbox { background: var(--accent-color); border-color: var(--accent-color); }
-        .item-info-clickable { flex-grow: 1; cursor: pointer; padding: 5px 0; }
-        .item-name { font-weight: 500; font-size: 1.05rem; display: block; color: var(--text-primary); }
-        .thumbnail { display: none; }
-        
-        /* Modal & Image Handling Fixes */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: flex-end; backdrop-filter: blur(2px); }
+
+        .group-header {
+            margin-top: 30px;
+            margin-bottom: 10px;
+            color: var(--text-sub);
+            font-weight: 500;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 5px;
+        }
+
+        /* --- Product Card (Grouped) --- */
+        .item-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .item-card:active { background-color: #F5F5F5; }
+
+        .item-name {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+        .item-count {
+            background: var(--accent);
+            color: white;
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 400;
+        }
+
+        /* --- Modal Styling (Redesigned) --- */
+        .modal {
+            display: none;
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); /* Dim Background */
+            z-index: 1000;
+            justify-content: center;
+            align-items: center; /* Center on Desktop */
+            padding: 20px;
+            box-sizing: border-box;
+            backdrop-filter: blur(3px);
+        }
         .modal.active { display: flex; }
-        .modal-content { background: var(--card-bg); width: 100%; max-width: 600px; border-top-left-radius: 25px; border-top-right-radius: 25px; padding: 30px; box-sizing: border-box; animation: slideUp 0.35s cubic-bezier(0.165, 0.84, 0.44, 1); position: relative; max-height: 90vh; overflow-y: auto; }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .close-btn { position: absolute; top: 20px; right: 20px; width: 35px; height: 35px; background: #f0f0f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #666; cursor: pointer; z-index: 10; }
 
-        .modal-img-container { width: 100%; height: 280px; border-radius: 15px; overflow: hidden; margin-bottom: 25px; background: #f0f0f0; position: relative; display: flex; justify-content: center; align-items: center;}
-        
-        /* รูปภาพ */
-        .modal-img { width: 100%; height: 100%; object-fit: contain; position: absolute; top:0; left:0; z-index: 2; opacity: 0; transition: opacity 0.3s; background: #fff;}
-        .modal-img.loaded { opacity: 1; } /* คลาสนี้จะถูกใส่เมื่อรูปโหลดเสร็จ */
-        
-        /* ข้อความ Error */
-        .img-error-text { position: absolute; color: #aaa; font-size: 0.9rem; text-align: center; z-index: 1; display: block; }
+        .modal-content {
+            background: var(--card-bg);
+            width: 100%; max-width: 500px;
+            max-height: 85vh;
+            border-radius: 12px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            animation: fadeIn 0.2s ease-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
-        .modal-title { font-size: 1.5rem; font-weight: 600; margin: 0 0 10px 0; line-height: 1.3; }
-        .modal-price { font-size: 1.8rem; font-weight: 600; color: var(--accent-color); margin-bottom: 20px; display: block; }
-        .badges-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
-        .modal-badge { background: var(--badge-bg); color: var(--text-primary); padding: 6px 12px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; }
-        .total-bar { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background: var(--accent-color); color: white; padding: 15px 30px; border-radius: 50px; box-shadow: 0 10px 25px rgba(166, 123, 91, 0.4); display: flex; gap: 20px; font-size: 1.1rem; font-weight: 500; z-index: 90; white-space: nowrap; transition: bottom 0.3s; }
-        .loading { text-align: center; padding: 50px; color: var(--text-secondary); font-weight: 300;}
+        /* Modal Header */
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+        }
+        .modal-title {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+        
+        /* ปุ่มปิดแบบใหม่ */
+        .close-btn {
+            background: #F0F0F0;
+            border: none;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            color: #555;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+        .close-btn:hover { background: #E0E0E0; }
+
+        /* Modal Body (Scrollable List) */
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        /* Variant Item Styling inside Modal */
+        .variant-item {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .variant-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+        /* Image Wrapper */
+        .variant-img-box {
+            width: 80px; height: 80px;
+            flex-shrink: 0;
+            background: #f9f9f9;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+        .variant-img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* Variant Info */
+        .variant-info { flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-start; }
+        
+        /* Badge Wrapper */
+        .badge-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+        .badge {
+            font-size: 0.8rem;
+            background: var(--tag-bg);
+            color: #555;
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid #eee;
+        }
+
+        .variant-price {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-top: auto; /* Push to bottom */
+        }
+
+        .loading { text-align: center; padding: 50px; color: var(--text-sub); }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>🇯🇵 Japan Shopping List</h1>
-        <div class="header-stats">
-            <span id="progressText">0/0 รายการ</span>
-            <span>Budget used: <b id="totalBudget">¥0</b></span>
-        </div>
+        <h1>Shopping List</h1>
         <div class="search-container">
-            <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search item...">
+            <input type="text" id="searchInput" class="search-box" placeholder="ค้นหา...">
         </div>
     </div>
 
     <div class="container" id="listContainer">
-        <div class="loading" id="loading"><i class="fas fa-circle-notch fa-spin"></i><br>Loading data...</div>
+        <div class="loading" id="loading">Loading data...</div>
     </div>
 
-    <div class="total-bar" id="totalBar" style="display: none;">
-        <span>Total:</span>
-        <b id="grandTotal">¥0</b>
-    </div>
-
-    <div class="modal" id="productModal" onclick="closeModal(event)">
+    <div class="modal" id="groupModal" onclick="closeModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="close-btn" onclick="closeModalDirect()"><i class="fas fa-times"></i></div>
-            
-            <div class="modal-img-container">
-                <span class="img-error-text" id="errorMsg">
-                    <i class="far fa-image" style="font-size: 2rem; margin-bottom: 10px;"></i><br>
-                    No Image / Load Failed
-                </span>
-                
-                <img src="" id="mImg" class="modal-img" 
-                     onload="this.classList.add('loaded');" 
-                     onerror="this.classList.remove('loaded');">
+            <div class="modal-header">
+                <h2 id="mTitle" class="modal-title">Product Name</h2>
+                <div class="close-btn" onclick="closeModalDirect()"><i class="fas fa-times"></i></div>
             </div>
-
-            <h2 id="mTitle" class="modal-title"></h2>
-            <span id="mPrice" class="modal-price"></span>
             
-            <div id="mBadges" class="badges-container"></div>
-
-            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 20px;">
-                <i class="fas fa-map-marker-alt" style="color: var(--accent-color);"></i> Location: <span id="mLoc"></span>
-            </p>
+            <div class="modal-body" id="mBody">
+                </div>
         </div>
     </div>
 
     <script>
         // -------------------------------------------------------------
-        // 👇 วางลิงก์ CSV ของคุณตรงนี้ (ลิงก์เดิมที่ใช้ได้แล้ว)
+        // 👇 วางลิงก์ CSV ตรงนี้เหมือนเดิม
         const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSsNmpYBJTnOp4Wa3lQy3VeTolxfSHKzRaXXGnM2k_C8iq0hYC4MlLLqSIb12Ml8fDDw6AhPp6ePFds/pub?gid=219602649&single=true&output=csv';
         // -------------------------------------------------------------
 
         let allProducts = [];
-        let checkedItems = JSON.parse(localStorage.getItem('checkedItems_minimal')) || {};
 
         function init() {
             if(sheetUrl.includes('google') || sheetUrl.includes('http')) {
@@ -129,129 +259,115 @@
                     download: true, header: true, skipEmptyLines: true,
                     complete: function(results) {
                         allProducts = results.data.filter(item => item.Name && item.Name.trim() !== '');
-                        renderApp(allProducts);
+                        renderGroupedList(allProducts);
                     },
                     error: (err) => document.getElementById('loading').innerHTML = "Error loading data."
                 });
             } else {
-                document.getElementById('loading').innerHTML = "Please set CSV link in code.";
+                document.getElementById('loading').innerHTML = "Please set CSV link.";
             }
         }
 
-        function renderApp(products) {
+        function renderGroupedList(products) {
             const container = document.getElementById('listContainer');
             container.innerHTML = '';
-            const grouped = products.reduce((acc, item) => {
+
+            // 1. Group by Location First
+            const groupedByLoc = products.reduce((acc, item) => {
                 const loc = item.Location ? item.Location.trim() : 'General';
                 if (!acc[loc]) acc[loc] = [];
                 acc[loc].push(item);
                 return acc;
             }, {});
 
-            Object.keys(grouped).sort().forEach(location => {
+            // 2. Loop Location
+            Object.keys(groupedByLoc).sort().forEach(location => {
                 const header = document.createElement('div');
                 header.className = 'group-header';
-                let icon = 'fa-map-pin';
-                const locLower = location.toLowerCase();
-                if(locLower.includes('uniqlo')) icon = 'fa-tshirt';
-                else if(locLower.includes('drug') || locLower.includes('donki')) icon = 'fa-capsules';
-                else if(locLower.includes('shoe') || locLower.includes('crocs')) icon = 'fa-shoe-prints';
-                header.innerHTML = `<i class="fas ${icon}"></i> ${location}`;
+                header.innerHTML = location;
                 container.appendChild(header);
 
-                grouped[location].forEach(item => {
-                    const isChecked = checkedItems[item.ID] ? 'completed' : '';
-                    const card = document.createElement('div');
-                    card.className = `item-card ${isChecked}`;
-                    card.dataset.id = item.ID;
+                // 3. Group by Name inside Location (จับชื่อเหมือนกันมารวมกัน)
+                const itemsInLoc = groupedByLoc[location];
+                const groupedByName = itemsInLoc.reduce((acc, item) => {
+                    const name = item.Name.trim();
+                    if (!acc[name]) acc[name] = [];
+                    acc[name].push(item);
+                    return acc;
+                }, {});
+
+                // 4. Create Cards
+                Object.keys(groupedByName).forEach(name => {
+                    const items = groupedByName[name]; // อาร์เรย์ของสินค้าที่มีชื่อเหมือนกัน
+                    const count = items.length;
                     
+                    const card = document.createElement('div');
+                    card.className = 'item-card';
+                    // คลิกที่การ์ดแล้วส่งรายการย่อยทั้งหมดไปที่ Modal
+                    card.onclick = () => openGroupModal(name, items);
+
                     card.innerHTML = `
-                        <div class="item-info-clickable" onclick='openModal(${JSON.stringify(item)})'>
-                            <span class="item-name">${item.Name}</span>
-                        </div>
-                        <div class="checkbox-area" onclick="toggleCheck('${item.ID}', this)">
-                            <div class="custom-checkbox">${isChecked ? '<i class="fas fa-check" style="font-size:0.9rem;"></i>' : ''}</div>
-                        </div>
+                        <span class="item-name">${name}</span>
+                        ${count > 1 ? `<span class="item-count">${count} items</span>` : '<span style="color:#ddd;"><i class="fas fa-chevron-right"></i></span>'}
                     `;
                     container.appendChild(card);
                 });
             });
-            updateStats();
-            document.getElementById('totalBar').style.display = 'flex';
         }
 
-        window.toggleCheck = (id, element) => {
-            const card = element.parentElement;
-            const checkbox = element.querySelector('.custom-checkbox');
-            if (checkedItems[id]) {
-                delete checkedItems[id];
-                card.classList.remove('completed');
-                checkbox.innerHTML = '';
-            } else {
-                checkedItems[id] = true;
-                card.classList.add('completed');
-                checkbox.innerHTML = '<i class="fas fa-check" style="font-size:0.9rem;"></i>';
-            }
-            localStorage.setItem('checkedItems_minimal', JSON.stringify(checkedItems));
-            updateStats();
-        }
+        // --- Logic ใหม่ของ Modal ---
+        window.openGroupModal = (title, items) => {
+            document.getElementById('mTitle').innerText = title;
+            const body = document.getElementById('mBody');
+            body.innerHTML = ''; // Clear old content
 
-        window.openModal = (item) => {
-            // Reset state รูปภาพ
-            const imgEl = document.getElementById('mImg');
-            imgEl.src = ''; 
-            imgEl.classList.remove('loaded'); // ซ่อนรูปไว้ก่อน
-            
-            // ใส่ลิงก์รูปใหม่
-            if (item.Image_URL && item.Image_URL.trim() !== '') {
-                 imgEl.src = item.Image_URL;
-                 // เมื่อโหลดเสร็จ มันจะเติม class 'loaded' เองจาก event onload ใน HTML
-                 // ซึ่ง class 'loaded' มีค่า opacity: 1 (ทับข้อความ Error มิดเลย)
-            }
-
-            document.getElementById('mTitle').innerText = item.Name;
-            document.getElementById('mPrice').innerText = item.JPY ? `¥${item.JPY}` : '';
-            document.getElementById('mLoc').innerText = item.Location || '-';
-
-            const badgesContainer = document.getElementById('mBadges');
-            badgesContainer.innerHTML = ''; 
-            if (item.Description) {
-                const badges = item.Description.split(',').map(s => s.trim()).filter(s => s !== '');
-                badges.forEach(badgeText => {
-                    const badge = document.createElement('span');
-                    badge.className = 'modal-badge';
-                    badge.innerText = badgeText;
-                    badgesContainer.appendChild(badge);
-                });
-            }
-            
-            document.getElementById('productModal').classList.add('active');
-        }
-
-        window.closeModal = (e) => { if(e.target.id === 'productModal') document.getElementById('productModal').classList.remove('active'); }
-        window.closeModalDirect = () => document.getElementById('productModal').classList.remove('active');
-
-        function updateStats() {
-            let total = 0;
-            let checkedCount = 0;
-            allProducts.forEach(p => {
-                if(checkedItems[p.ID]) {
-                    checkedCount++;
-                    if(p.JPY) {
-                        let cleanPrice = p.JPY.replace(/,/g, '').replace(/"/g, '');
-                        total += parseFloat(cleanPrice) || 0;
-                    }
+            items.forEach(item => {
+                // Prepare Image
+                let imgUrl = item.Image_URL;
+                if(!imgUrl || imgUrl.trim() === '') imgUrl = 'https://via.placeholder.com/150?text=No+Img';
+                
+                // Prepare Badges (Description)
+                let badgesHtml = '';
+                if(item.Description) {
+                    const badges = item.Description.split(',').map(s => s.trim()).filter(s => s!=='');
+                    badges.forEach(b => {
+                        badgesHtml += `<span class="badge">${b}</span>`;
+                    });
+                } else {
+                    badgesHtml = `<span class="badge" style="background:transparent; padding-left:0; color:#ccc;">No description</span>`;
                 }
+
+                // Prepare Price
+                const priceHtml = item.JPY ? `¥${item.JPY}` : '';
+
+                // Create Row HTML
+                const row = document.createElement('div');
+                row.className = 'variant-item';
+                row.innerHTML = `
+                    <div class="variant-img-box">
+                        <img src="${imgUrl}" class="variant-img" onerror="this.src='https://via.placeholder.com/150?text=Err'">
+                    </div>
+                    <div class="variant-info">
+                        <div class="badge-container">${badgesHtml}</div>
+                        <div class="variant-price">${priceHtml}</div>
+                    </div>
+                `;
+                body.appendChild(row);
             });
-            const formattedTotal = total.toLocaleString('en-US', {minimumFractionDigits: 0});
-            document.getElementById('progressText').innerText = `${checkedCount}/${allProducts.length} Items`;
-            document.getElementById('grandTotal').innerText = `¥${formattedTotal}`;
+
+            document.getElementById('groupModal').classList.add('active');
         }
 
+        window.closeModal = (e) => { 
+            if(e.target.id === 'groupModal') document.getElementById('groupModal').classList.remove('active'); 
+        }
+        window.closeModalDirect = () => document.getElementById('groupModal').classList.remove('active');
+
+        // Search Logic
         document.getElementById('searchInput').addEventListener('keyup', (e) => {
             const term = e.target.value.toLowerCase();
             const filtered = allProducts.filter(p => (p.Name && p.Name.toLowerCase().includes(term)));
-            renderApp(filtered);
+            renderGroupedList(filtered);
         });
 
         init();
