@@ -11,182 +11,58 @@
     <style>
         /* === Minimal Color Palette === */
         :root {
-            --bg-color: #FDFBF7; /* สีครีมอ่อนๆ */
+            --bg-color: #FDFBF7;
             --card-bg: #FFFFFF;
-            --text-primary: #4A4A4A; /* เทาเข้ม */
-            --text-secondary: #8C8C8C; /* เทาอ่อน */
-            --accent-color: #A67B5B; /* น้ำตาลโทนอุ่น (สำหรับราคาและปุ่มเช็ค) */
+            --text-primary: #4A4A4A;
+            --text-secondary: #8C8C8C;
+            --accent-color: #A67B5B;
             --border-color: #EFEFEF;
-            --badge-bg: #F0EAE4; /* พื้นหลัง Badge สีครีมเข้มขึ้นนิดนึง */
+            --badge-bg: #F0EAE4;
         }
 
-        body {
-            font-family: 'Prompt', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            margin: 0;
-            padding-bottom: 100px; /* เผื่อพื้นที่ให้บาร์ด้านล่าง */
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* Header Header Minimal Style */
-        .header {
-            background: var(--card-bg);
-            padding: 20px 25px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .header h1 {
-            margin: 0;
-            font-size: 1.4rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            letter-spacing: 0.5px;
-        }
-        .header-stats {
-            margin-top: 8px;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            display: flex;
-            justify-content: space-between;
-        }
+        body { font-family: 'Prompt', sans-serif; background-color: var(--bg-color); color: var(--text-primary); margin: 0; padding-bottom: 100px; -webkit-tap-highlight-color: transparent; }
+        .header { background: var(--card-bg); padding: 20px 25px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border-color); }
+        .header h1 { margin: 0; font-size: 1.4rem; font-weight: 600; color: var(--text-primary); letter-spacing: 0.5px; }
+        .header-stats { margin-top: 8px; font-size: 0.9rem; color: var(--text-secondary); display: flex; justify-content: space-between; }
         .header-stats b { color: var(--accent-color); }
-
-        /* Search Bar Minimal */
         .search-container { margin-top: 15px; }
-        .search-box {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 25px; /* ทรงกลมมน */
-            font-family: 'Prompt';
-            font-size: 0.95rem;
-            background: var(--bg-color);
-            outline: none;
-            transition: all 0.2s;
-        }
+        .search-box { width: 100%; padding: 12px 15px; border: 1px solid var(--border-color); border-radius: 25px; font-family: 'Prompt'; font-size: 0.95rem; background: var(--bg-color); outline: none; transition: all 0.2s; }
         .search-box:focus { border-color: var(--accent-color); background: #fff; }
-
-        /* Container & List */
         .container { max-width: 600px; margin: 20px auto; padding: 0 20px; }
-
-        .group-header {
-            margin-top: 30px;
-            margin-bottom: 15px;
-            color: var(--text-secondary);
-            font-weight: 500;
-            font-size: 1rem;
-            display: flex; align-items: center;
-            text-transform: uppercase; letter-spacing: 1px;
-        }
+        .group-header { margin-top: 30px; margin-bottom: 15px; color: var(--text-secondary); font-weight: 500; font-size: 1rem; display: flex; align-items: center; text-transform: uppercase; letter-spacing: 1px; }
         .group-header i { margin-right: 10px; color: var(--accent-color); opacity: 0.7; }
-
-        /* --- Item Card (Mobile Clean View) --- */
-        .item-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 18px;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.03); /* เงาบางมากๆ */
-            border: 1px solid var(--border-color);
-            transition: all 0.2s;
-        }
+        .item-card { background: var(--card-bg); border-radius: 12px; padding: 18px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid var(--border-color); transition: all 0.2s; }
         .item-card:active { background-color: #fafafa; transform: scale(0.99); }
-
         .item-card.completed { opacity: 0.6; background: #f9f9f9; }
         .item-card.completed .item-name { text-decoration: line-through; color: var(--text-secondary); }
-
-        /* Checkbox Custom Design */
-        .checkbox-area {
-            padding: 5px; margin-right: 15px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .custom-checkbox {
-            width: 24px; height: 24px;
-            border: 2px solid #CFD8DC; border-radius: 50%; /* วงกลม */
-            display: flex; align-items: center; justify-content: center;
-            transition: all 0.2s; color: white;
-        }
-        .item-card.completed .custom-checkbox {
-            background: var(--accent-color); border-color: var(--accent-color);
-        }
-
-        /* Item Name (Click to open modal) */
-        .item-info-clickable {
-            flex-grow: 1; cursor: pointer; padding: 5px 0;
-        }
-        .item-name {
-            font-weight: 500; font-size: 1.05rem; display: block;
-            color: var(--text-primary);
-        }
-        /* ซ่อน thumbnail ในหน้ารวม เพื่อความคลีน */
+        .checkbox-area { padding: 5px; margin-right: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .custom-checkbox { width: 24px; height: 24px; border: 2px solid #CFD8DC; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: white; }
+        .item-card.completed .custom-checkbox { background: var(--accent-color); border-color: var(--accent-color); }
+        .item-info-clickable { flex-grow: 1; cursor: pointer; padding: 5px 0; }
+        .item-name { font-weight: 500; font-size: 1.05rem; display: block; color: var(--text-primary); }
         .thumbnail { display: none; }
-
-        /* --- Modal (Detail Popup) --- */
-        .modal {
-            display: none; position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%; background: rgba(0,0,0,0.6);
-            z-index: 1000; justify-content: center; align-items: flex-end;
-            backdrop-filter: blur(2px);
-        }
+        
+        /* Modal & Image Handling Fixes */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: flex-end; backdrop-filter: blur(2px); }
         .modal.active { display: flex; }
-
-        .modal-content {
-            background: var(--card-bg); width: 100%; max-width: 600px;
-            border-top-left-radius: 25px; border-top-right-radius: 25px;
-            padding: 30px; box-sizing: border-box;
-            animation: slideUp 0.35s cubic-bezier(0.165, 0.84, 0.44, 1);
-            position: relative; max-height: 90vh; overflow-y: auto;
-        }
+        .modal-content { background: var(--card-bg); width: 100%; max-width: 600px; border-top-left-radius: 25px; border-top-right-radius: 25px; padding: 30px; box-sizing: border-box; animation: slideUp 0.35s cubic-bezier(0.165, 0.84, 0.44, 1); position: relative; max-height: 90vh; overflow-y: auto; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .close-btn { position: absolute; top: 20px; right: 20px; width: 35px; height: 35px; background: #f0f0f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #666; cursor: pointer; z-index: 10; }
 
-        .close-btn {
-            position: absolute; top: 20px; right: 20px; width: 35px; height: 35px;
-            background: #f0f0f0; border-radius: 50%; display: flex;
-            align-items: center; justify-content: center;
-            font-size: 1.2rem; color: #666; cursor: pointer;
-        }
-
-        /* Modal Elements */
-        .modal-img-container {
-            width: 100%; height: 280px; border-radius: 15px; overflow: hidden;
-            margin-bottom: 25px; background: #f0f0f0; position: relative;
-        }
-        .modal-img { width: 100%; height: 100%; object-fit: cover; }
-        /* ข้อความซ้อนทับเวลารูปโหลดไม่ได้ */
-        .img-error-text { 
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            color: #aaa; font-size: 0.9rem; text-align: center; z-index: 0;
-        }
+        .modal-img-container { width: 100%; height: 280px; border-radius: 15px; overflow: hidden; margin-bottom: 25px; background: #f0f0f0; position: relative; display: flex; justify-content: center; align-items: center;}
+        
+        /* รูปภาพ */
+        .modal-img { width: 100%; height: 100%; object-fit: contain; position: absolute; top:0; left:0; z-index: 2; opacity: 0; transition: opacity 0.3s; background: #fff;}
+        .modal-img.loaded { opacity: 1; } /* คลาสนี้จะถูกใส่เมื่อรูปโหลดเสร็จ */
+        
+        /* ข้อความ Error */
+        .img-error-text { position: absolute; color: #aaa; font-size: 0.9rem; text-align: center; z-index: 1; display: block; }
 
         .modal-title { font-size: 1.5rem; font-weight: 600; margin: 0 0 10px 0; line-height: 1.3; }
-        .modal-price {
-            font-size: 1.8rem; font-weight: 600; color: var(--accent-color);
-            margin-bottom: 20px; display: block;
-        }
-        
-        /* Badges Section */
+        .modal-price { font-size: 1.8rem; font-weight: 600; color: var(--accent-color); margin-bottom: 20px; display: block; }
         .badges-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
-        .modal-badge {
-            background: var(--badge-bg); color: var(--text-primary);
-            padding: 6px 12px; border-radius: 8px; font-size: 0.9rem; font-weight: 500;
-        }
-
-        /* Bottom Total Bar */
-        .total-bar {
-            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
-            background: var(--accent-color); color: white;
-            padding: 15px 30px; border-radius: 50px;
-            box-shadow: 0 10px 25px rgba(166, 123, 91, 0.4);
-            display: flex; gap: 20px; font-size: 1.1rem; font-weight: 500;
-            z-index: 90; white-space: nowrap; transition: bottom 0.3s;
-        }
-        
+        .modal-badge { background: var(--badge-bg); color: var(--text-primary); padding: 6px 12px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; }
+        .total-bar { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background: var(--accent-color); color: white; padding: 15px 30px; border-radius: 50px; box-shadow: 0 10px 25px rgba(166, 123, 91, 0.4); display: flex; gap: 20px; font-size: 1.1rem; font-weight: 500; z-index: 90; white-space: nowrap; transition: bottom 0.3s; }
         .loading { text-align: center; padding: 50px; color: var(--text-secondary); font-weight: 300;}
     </style>
 </head>
@@ -217,8 +93,14 @@
             <div class="close-btn" onclick="closeModalDirect()"><i class="fas fa-times"></i></div>
             
             <div class="modal-img-container">
-                <span class="img-error-text"><i class="far fa-image"></i><br>No Image / Load Failed</span>
-                <img src="" id="mImg" class="modal-img" style="display: none;" onload="this.style.display='block'" onerror="this.style.display='none'">
+                <span class="img-error-text" id="errorMsg">
+                    <i class="far fa-image" style="font-size: 2rem; margin-bottom: 10px;"></i><br>
+                    No Image / Load Failed
+                </span>
+                
+                <img src="" id="mImg" class="modal-img" 
+                     onload="this.classList.add('loaded');" 
+                     onerror="this.classList.remove('loaded');">
             </div>
 
             <h2 id="mTitle" class="modal-title"></h2>
@@ -234,27 +116,12 @@
 
     <script>
         // -------------------------------------------------------------
-        // 👇 วางลิงก์ CSV ของคุณตรงนี้อีกครั้งนะครับ
+        // 👇 วางลิงก์ CSV ของคุณตรงนี้ (ลิงก์เดิมที่ใช้ได้แล้ว)
         const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSsNmpYBJTnOp4Wa3lQy3VeTolxfSHKzRaXXGnM2k_C8iq0hYC4MlLLqSIb12Ml8fDDw6AhPp6ePFds/pub?gid=219602649&single=true&output=csv';
         // -------------------------------------------------------------
 
         let allProducts = [];
         let checkedItems = JSON.parse(localStorage.getItem('checkedItems_minimal')) || {};
-
-        // ฟังก์ชันแปลงลิงก์ Drive (เผื่อฟลุ๊คใช้ได้)
-        function getGoogleDriveDirectLink(url) {
-            if (!url || !url.includes('drive.google.com')) return url;
-            let fileId = '';
-            const parts = url.split('/');
-            if (url.includes('/d/')) {
-                const index = parts.indexOf('d');
-                if (index !== -1 && parts[index + 1]) fileId = parts[index + 1];
-            } else if (url.includes('id=')) {
-                const params = new URLSearchParams(url.split('?')[1]);
-                fileId = params.get('id');
-            }
-            return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
-        }
 
         function init() {
             if(sheetUrl.includes('google') || sheetUrl.includes('http')) {
@@ -298,7 +165,6 @@
                     card.className = `item-card ${isChecked}`;
                     card.dataset.id = item.ID;
                     
-                    // หน้าแรก โชว์แค่ Checkbox กับ ชื่อสินค้า (คลีนๆ)
                     card.innerHTML = `
                         <div class="item-info-clickable" onclick='openModal(${JSON.stringify(item)})'>
                             <span class="item-name">${item.Name}</span>
@@ -330,27 +196,26 @@
             updateStats();
         }
 
-        // --- ส่วนของ Modal (Popup รายละเอียด) ---
         window.openModal = (item) => {
-            // 1. จัดการรูปภาพ
-            let imgUrl = getGoogleDriveDirectLink(item.Image_URL);
+            // Reset state รูปภาพ
             const imgEl = document.getElementById('mImg');
-            imgEl.style.display = 'none'; // ซ่อนก่อนโหลดเสร็จ
-            if (imgUrl && imgUrl.trim() !== '') {
-                 imgEl.src = imgUrl;
-                 // ถ้าโหลดเสร็จ มันจะโชว์เองจาก event onload ใน HTML
+            imgEl.src = ''; 
+            imgEl.classList.remove('loaded'); // ซ่อนรูปไว้ก่อน
+            
+            // ใส่ลิงก์รูปใหม่
+            if (item.Image_URL && item.Image_URL.trim() !== '') {
+                 imgEl.src = item.Image_URL;
+                 // เมื่อโหลดเสร็จ มันจะเติม class 'loaded' เองจาก event onload ใน HTML
+                 // ซึ่ง class 'loaded' มีค่า opacity: 1 (ทับข้อความ Error มิดเลย)
             }
 
-            // 2. ข้อมูลพื้นฐาน
             document.getElementById('mTitle').innerText = item.Name;
             document.getElementById('mPrice').innerText = item.JPY ? `¥${item.JPY}` : '';
             document.getElementById('mLoc').innerText = item.Location || '-';
 
-            // 3. สร้าง Badges จาก Description (แยกด้วยเครื่องหมาย ,)
             const badgesContainer = document.getElementById('mBadges');
-            badgesContainer.innerHTML = ''; // ล้างของเก่า
+            badgesContainer.innerHTML = ''; 
             if (item.Description) {
-                // แยกคำด้วยลูกน้ำ (,) ถ้าไม่มีลูกน้ำ ก็ถือว่าเป็น 1 badge
                 const badges = item.Description.split(',').map(s => s.trim()).filter(s => s !== '');
                 badges.forEach(badgeText => {
                     const badge = document.createElement('span');
@@ -360,7 +225,6 @@
                 });
             }
             
-            // เปิด Modal
             document.getElementById('productModal').classList.add('active');
         }
 
