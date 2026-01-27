@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Japan Shopping 2026 🇯🇵</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #FF4757; /* สีแดงสไตล์ญี่ปุ่น/Uniqlo */
+            --secondary: #2F3542;
+            --bg: #F1F2F6;
+            --card-bg: #FFFFFF;
+            --text: #2F3542;
+            --checked-bg: #EDFDF5;
+        }
+
+        body { font-family: 'Prompt', sans-serif; background-color: var(--bg); margin: 0; padding-bottom: 80px; color: var(--text); }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #FF6B81, #FF4757);
+            color: white;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+        }
+        .header h1 { margin: 0; font-size: 1.5rem; }
+        .header-stats { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 0.9rem; opacity: 0.9; }
+        
+        /* Search */
+        .search-container { margin-top: 15px; }
+        .search-box {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Prompt';
+            box-sizing: border-box;
+            outline: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Container */
+        .container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
+
+        /* Group Headers */
+        .group-header {
+            margin-top: 25px;
+            margin-bottom: 10px;
+            color: var(--secondary);
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            text-transform: capitalize;
+        }
+        .group-header i { margin-right: 8px; color: var(--primary); }
+
+        /* List Items */
+        .item-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .item-card:active { transform: scale(0.98); }
+        
+        .item-card.completed {
+            background-color: var(--checked-bg);
+            opacity: 0.8;
+        }
+        .item-card.completed .item-name { text-decoration: line-through; color: #888; }
+
+        .checkbox-area { padding-right: 15px; display: flex; align-items: center; }
+        .custom-checkbox {
+            width: 24px; height: 24px;
+            border: 2px solid #ddd; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .item-card.completed .custom-checkbox { background: var(--primary); border-color: var(--primary); color: white; }
+
+        .item-info { flex-grow: 1; cursor: pointer; }
+        .item-name { font-weight: 600; font-size: 1rem; margin-bottom: 4px; display: block; }
+        .item-desc { font-size: 0.85rem; color: #888; display: block; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;}
+        .item-price { color: var(--primary); font-weight: 600; font-size: 0.95rem; }
+
+        .thumbnail {
+            width: 50px; height: 50px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-left: 10px;
+            background-color: #eee;
+        }
+
+        /* Modal (Popup) */
+        .modal {
+            display: none;
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center; align-items: flex-end; /* Mobile: slide up */
+        }
+        .modal.active { display: flex; }
+        
+        .modal-content {
+            background: white;
+            width: 100%; max-width: 500px;
+            border-top-left-radius: 25px;
+            border-top-right-radius: 25px;
+            padding: 30px;
+            box-sizing: border-box;
+            animation: slideUp 0.3s ease;
+            position: relative;
+        }
+        
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        .close-btn { position: absolute; top: 20px; right: 20px; font-size: 1.5rem; color: #aaa; cursor: pointer; }
+        
+        .modal-img { width: 100%; height: 300px; object-fit: contain; border-radius: 10px; margin-bottom: 20px; background: #f9f9f9; }
+        .modal-title { font-size: 1.4rem; font-weight: 600; margin-bottom: 5px; color: var(--secondary); }
+        .modal-desc { color: #666; margin-bottom: 20px; font-size: 1rem; }
+        .modal-price-tag {
+            background: var(--primary); color: white;
+            padding: 10px 20px; border-radius: 50px;
+            font-size: 1.2rem; font-weight: 600;
+            display: inline-block;
+        }
+
+        /* Total Bar */
+        .total-bar {
+            position: fixed; bottom: 20px; left: 50%;
+            transform: translateX(-50%);
+            background: var(--secondary);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            display: flex; gap: 15px;
+            font-size: 1.1rem;
+            z-index: 90;
+            white-space: nowrap;
+        }
+
+        .loading { text-align: center; padding: 50px; color: #888; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🇯🇵 Japan 2026</h1>
+        <div class="header-stats">
+            <span id="progressText">0/0 รายการ</span>
+            <span>งบประมาณ: <b id="totalBudget">¥0</b></span>
+        </div>
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-box" placeholder="🔍 ค้นหาสินค้า...">
+        </div>
+    </div>
+
+    <div class="container" id="listContainer">
+        <div class="loading" id="loading">กำลังโหลดข้อมูลจาก Google Sheet...</div>
+    </div>
+
+    <div class="total-bar" id="totalBar" style="display: none;">
+        <span>รวมยอดที่ซื้อ:</span>
+        <b id="grandTotal">¥0</b>
+    </div>
+
+    <div class="modal" id="productModal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-btn" onclick="closeModalDirect()">&times;</span>
+            <img src="" id="mImg" class="modal-img">
+            <div id="mTitle" class="modal-title"></div>
+            <div id="mDesc" class="modal-desc"></div>
+            <div class="modal-price-tag" id="mPrice"></div>
+        </div>
+    </div>
+
+    <script>
+        // -------------------------------------------------------------
+        // 👇 วางลิงก์ CSV ตรงนี้ (ต้อง Publish to Web เป็น CSV ก่อนนะ!)
+        const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSsNmpYBJTnOp4Wa3lQy3VeTolxfSHKzRaXXGnM2k_C8iq0hYC4MlLLqSIb12Ml8fDDw6AhPp6ePFds/pub?gid=219602649&single=true&output=csv';
+        // -------------------------------------------------------------
+
+        let allProducts = [];
+        let checkedItems = JSON.parse(localStorage.getItem('checkedItems')) || {}; // จำค่าที่ติ๊กไว้
+
+        function init() {
+            if(sheetUrl.includes('google') || sheetUrl.includes('http')) {
+                Papa.parse(sheetUrl, {
+                    download: true,
+                    header: true,
+                    complete: function(results) {
+                        // กรองเฉพาะแถวที่มีชื่อสินค้า
+                        allProducts = results.data.filter(item => item.Name && item.Name.trim() !== '');
+                        renderApp(allProducts);
+                    },
+                    error: (err) => document.getElementById('loading').innerHTML = "โหลดข้อมูลไม่สำเร็จ เช็คลิงก์นะครับ"
+                });
+            } else {
+                document.getElementById('loading').innerHTML = "⚠️ อย่าลืมใส่ลิงก์ Google Sheet CSV ในโค้ดนะครับ";
+            }
+        }
+
+        function renderApp(products) {
+            const container = document.getElementById('listContainer');
+            container.innerHTML = '';
+            
+            // 1. Group Data by Location
+            const grouped = products.reduce((acc, item) => {
+                // ถ้า Location ว่าง ให้เป็น "General"
+                const loc = item.Location ? item.Location.toLowerCase() : 'general';
+                if (!acc[loc]) acc[loc] = [];
+                acc[loc].push(item);
+                return acc;
+            }, {});
+
+            // 2. Loop Render Groups
+            Object.keys(grouped).forEach(location => {
+                // สร้าง Header หมวดหมู่
+                const header = document.createElement('div');
+                header.className = 'group-header';
+                
+                // ใส่ไอคอนให้แต่ละหมวด
+                let icon = 'fa-map-marker-alt';
+                if(location.includes('uniqlo')) icon = 'fa-tshirt';
+                else if(location.includes('drug') || location.includes('donki')) icon = 'fa-medkit';
+                else if(location.includes('crocs')) icon = 'fa-shoe-prints';
+                
+                header.innerHTML = `<i class="fas ${icon}"></i> ${location.toUpperCase()}`;
+                container.appendChild(header);
+
+                // สร้าง List Items
+                grouped[location].forEach(item => {
+                    const isChecked = checkedItems[item.ID] ? 'completed' : '';
+                    const priceDisplay = item.JPY ? `¥${item.JPY}` : '';
+                    // ใช้ Image_URL ถ้ามี, ถ้าไม่มีใช้ Placeholder
+                    const imgUrl = item.Image_URL && item.Image_URL.trim() ? item.Image_URL : 'https://via.placeholder.com/100?text=No+Img';
+
+                    const card = document.createElement('div');
+                    card.className = `item-card ${isChecked}`;
+                    card.dataset.id = item.ID;
+                    
+                    card.innerHTML = `
+                        <div class="checkbox-area" onclick="toggleCheck('${item.ID}', this)">
+                            <div class="custom-checkbox">
+                                ${isChecked ? '<i class="fas fa-check" style="font-size:0.8rem;"></i>' : ''}
+                            </div>
+                        </div>
+                        <div class="item-info" onclick='openModal(${JSON.stringify(item)})'>
+                            <span class="item-name">${item.Name}</span>
+                            <span class="item-desc">${item.Description || ''}</span>
+                            <span class="item-price">${priceDisplay}</span>
+                        </div>
+                        <img src="${imgUrl}" class="thumbnail" onclick='openModal(${JSON.stringify(item)})' onerror="this.src='https://via.placeholder.com/100?text=Err'">
+                    `;
+                    container.appendChild(card);
+                });
+            });
+
+            updateStats();
+            document.getElementById('totalBar').style.display = 'flex';
+        }
+
+        // --- Interaction Logic ---
+
+        // 1. Toggle Checkbox
+        window.toggleCheck = (id, element) => {
+            const card = element.parentElement;
+            const checkbox = element.querySelector('.custom-checkbox');
+            
+            if (checkedItems[id]) {
+                delete checkedItems[id];
+                card.classList.remove('completed');
+                checkbox.innerHTML = '';
+            } else {
+                checkedItems[id] = true;
+                card.classList.add('completed');
+                checkbox.innerHTML = '<i class="fas fa-check" style="font-size:0.8rem;"></i>';
+            }
+            
+            localStorage.setItem('checkedItems', JSON.stringify(checkedItems));
+            updateStats();
+        }
+
+        // 2. Open Modal
+        window.openModal = (item) => {
+            document.getElementById('mImg').src = item.Image_URL || 'https://via.placeholder.com/300?text=No+Image';
+            document.getElementById('mTitle').innerText = item.Name;
+            document.getElementById('mDesc').innerText = `${item.Description || ''} (${item.Location || ''})`;
+            document.getElementById('mPrice').innerText = item.JPY ? `¥${item.JPY}` : 'ไม่ระบุราคา';
+            
+            document.getElementById('productModal').classList.add('active');
+        }
+
+        window.closeModal = (e) => {
+            if(e.target.id === 'productModal') document.getElementById('productModal').classList.remove('active');
+        }
+        window.closeModalDirect = () => document.getElementById('productModal').classList.remove('active');
+
+        // 3. Update Totals (คำนวณเงิน)
+        function updateStats() {
+            let total = 0;
+            let checkedCount = 0;
+            
+            allProducts.forEach(p => {
+                if(checkedItems[p.ID]) {
+                    checkedCount++;
+                    // แปลงราคา "2,990.00" เป็นตัวเลข 2990
+                    if(p.JPY) {
+                        let cleanPrice = p.JPY.replace(/,/g, '').replace(/"/g, '');
+                        total += parseFloat(cleanPrice) || 0;
+                    }
+                }
+            });
+
+            // Format เงินแบบมีลูกน้ำ
+            const formattedTotal = total.toLocaleString('en-US', {minimumFractionDigits: 0});
+            
+            document.getElementById('progressText').innerText = `${checkedCount}/${allProducts.length} รายการ`;
+            document.getElementById('grandTotal').innerText = `¥${formattedTotal}`;
+        }
+
+        // 4. Search Filter
+        document.getElementById('searchInput').addEventListener('keyup', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = allProducts.filter(p => 
+                (p.Name && p.Name.toLowerCase().includes(term)) || 
+                (p.Description && p.Description.toLowerCase().includes(term)) ||
+                (p.Location && p.Location.toLowerCase().includes(term))
+            );
+            renderApp(filtered);
+        });
+
+        init();
+    </script>
+</body>
+</html>
