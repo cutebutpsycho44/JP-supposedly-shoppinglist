@@ -113,18 +113,30 @@
         .badge-container { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
         .badge { font-size: 0.8rem; background: var(--tag-bg); color: #555; padding: 4px 10px; border-radius: 4px; border: 1px solid #eee; }
         
-        /* Price Styling */
+        /* Price Styling (Updated) */
         .variant-price { 
             font-size: 1.1rem; 
             font-weight: 600; 
             color: var(--accent); 
             margin-top: auto;
             display: flex; 
-            align-items: baseline; 
+            align-items: center; 
+            flex-wrap: wrap;
             gap: 5px; 
             margin-bottom: 4px;
         }
-        .thb-price { font-size: 0.9rem; color: #999; font-weight: 400; }
+        .thb-price { font-size: 0.9rem; color: #999; font-weight: 400; white-space: nowrap; }
+        
+        /* ✨ Style สำหรับ No Vat ✨ */
+        .no-vat-price {
+            font-size: 0.8rem;
+            color: #3949ab; /* สีน้ำเงินเข้ม */
+            font-weight: 400;
+            white-space: nowrap;
+            background: #e8eaf6;
+            padding: 1px 6px;
+            border-radius: 4px;
+        }
 
         /* --- Remark Styling --- */
         .remark-container { width: 100%; display: block; margin-top: 2px; }
@@ -219,20 +231,18 @@
             if(sheetUrl.includes('google') || sheetUrl.includes('http')) {
                 loadText.innerText = "Downloading data...";
                 
-                // 🔥 เทคนิค Cache Busting: เติม ?t=เวลาปัจจุบัน เพื่อบังคับให้โหลดข้อมูลใหม่เสมอ
+                // Cache Busting
                 const bustUrl = sheetUrl + '&t=' + Date.now();
 
                 Papa.parse(bustUrl, {
                     download: true,
                     header: true,
                     skipEmptyLines: true,
-                    // 🚀 ปิด Worker เพื่อความเสถียรสูงสุดบน GitHub Pages (Main thread เร็วกว่าสำหรับไฟล์เล็ก)
-                    worker: false, 
+                    worker: false, // ปิด Worker สำหรับ Github Pages
                     complete: function(results) {
                         clearTimeout(loadTimer);
                         loadText.innerText = "Processing...";
                         
-                        // กรองข้อมูล
                         allProducts = results.data.filter(item => item.Name && item.Name.trim() !== '');
                         
                         if (allProducts.length === 0) {
@@ -312,13 +322,29 @@
                     badgesHtml = `<span class="badge" style="background:transparent; padding-left:0; color:#ccc;">No description</span>`;
                 }
 
+                // 💰 Price Logic Updated (Full Option: Inc Vat & No Vat + THB)
                 let priceHtml = '';
                 if (item.JPY) {
                     const jpyVal = parseFloat(item.JPY.replace(/,/g, ''));
                     if (!isNaN(jpyVal)) {
+                        // 1. Calculate Standard Price (Inc Vat)
                         const thbVal = Math.round(jpyVal * RATE);
                         const thbStr = thbVal.toLocaleString('en-US');
-                        priceHtml = `¥${item.JPY} <span class="thb-price">(฿${thbStr})</span>`;
+
+                        // 2. Calculate No Vat (JPY / 1.1)
+                        const noVatVal = Math.round(jpyVal / 1.1);
+                        const noVatStr = noVatVal.toLocaleString('en-US');
+
+                        // 3. Calculate No Vat THB
+                        const noVatThbVal = Math.round(noVatVal * RATE);
+                        const noVatThbStr = noVatThbVal.toLocaleString('en-US');
+
+                        // 4. Assemble HTML
+                        priceHtml = `
+                            ¥${item.JPY} 
+                            <span class="thb-price">(฿${thbStr})</span>
+                            <span class="no-vat-price">(No Vat: ¥${noVatStr} / ฿${noVatThbStr})</span>
+                        `;
                     } else {
                         priceHtml = `¥${item.JPY}`;
                     }
