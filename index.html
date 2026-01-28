@@ -114,8 +114,31 @@
         .badge { font-size: 0.8rem; background: var(--tag-bg); color: #555; padding: 4px 10px; border-radius: 4px; border: 1px solid #eee; }
         
         /* Price Styling Updated */
-        .variant-price { font-size: 1.1rem; font-weight: 600; color: var(--accent); margin-top: auto; display: flex; align-items: baseline; gap: 5px; }
+        .variant-price { 
+            font-size: 1.1rem; 
+            font-weight: 600; 
+            color: var(--accent); 
+            margin-top: auto; /* Push to bottom if space available */
+            display: flex; 
+            align-items: baseline; 
+            gap: 5px; 
+        }
         .thb-price { font-size: 0.9rem; color: #999; font-weight: 400; }
+
+        /* --- ✨ New Remark Styling ✨ --- */
+        .remark-badge {
+            font-size: 0.75rem; /* ตัวเล็กกว่าราคา */
+            color: #777;
+            background: #fff8e1; /* พื้นหลังสีเหลืองอ่อนจางๆ ให้ดูเป็น Note */
+            border: 1px solid #ffe0b2;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-top: 5px; /* เว้นระยะห่างจากราคา */
+            display: inline-block;
+            align-self: flex-start; /* ชิดซ้าย */
+            line-height: 1.4;
+        }
+        .remark-badge i { color: #fbc02d; margin-right: 4px; }
 
         /* --- Image Viewer Modal --- */
         .img-viewer-modal {
@@ -168,9 +191,9 @@
 
     <script>
         // -------------------------------------------------------------
-        // 👇 ลิงก์เดิมของคุณ (ไม่ต้องแก้)
+        // 👇 ลิงก์เดิมของคุณ
         const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSsNmpYBJTnOp4Wa3lQy3VeTolxfSHKzRaXXGnM2k_C8iq0hYC4MlLLqSIb12Ml8fDDw6AhPp6ePFds/pub?gid=219602649&single=true&output=csv';
-        // 💰 เรตเงินเยน (แก้ไขตรงนี้ได้ถ้าเรตเปลี่ยน)
+        // 💰 เรตเงินเยน
         const RATE = 0.215;
         // -------------------------------------------------------------
 
@@ -229,7 +252,7 @@
             });
         }
 
-        // --- Logic ใหม่ของ Modal (เพิ่มคำนวณเงิน) ---
+        // --- Logic Modified: Added Remarks ---
         window.openGroupModal = (title, items) => {
             document.getElementById('mTitle').innerText = title;
             const body = document.getElementById('mBody');
@@ -247,19 +270,29 @@
                     badgesHtml = `<span class="badge" style="background:transparent; padding-left:0; color:#ccc;">No description</span>`;
                 }
 
-                // 💰 คำนวณเงินตรงนี้
+                // 💰 Price Logic
                 let priceHtml = '';
                 if (item.JPY) {
-                    // ลบลูกน้ำออกก่อนคำนวณ
                     const jpyVal = parseFloat(item.JPY.replace(/,/g, ''));
                     if (!isNaN(jpyVal)) {
                         const thbVal = Math.round(jpyVal * RATE);
-                        // จัดรูปแบบตัวเลขให้มีลูกน้ำ
                         const thbStr = thbVal.toLocaleString('en-US');
                         priceHtml = `¥${item.JPY} <span class="thb-price">(฿${thbStr})</span>`;
                     } else {
                         priceHtml = `¥${item.JPY}`;
                     }
+                }
+
+                // ✨ Remarks Logic (New)
+                let remarkHtml = '';
+                // Check both 'Remark' and 'Remarks' columns just in case
+                const remarkText = item.Remark || item.Remarks || '';
+                if (remarkText.trim() !== '') {
+                    remarkHtml = `
+                        <div class="remark-badge">
+                            <i class="fas fa-sticky-note"></i> ${remarkText}
+                        </div>
+                    `;
                 }
 
                 const row = document.createElement('div');
@@ -273,7 +306,7 @@
                     <div class="variant-info">
                         <div class="badge-container">${badgesHtml}</div>
                         <div class="variant-price">${priceHtml}</div>
-                    </div>
+                        ${remarkHtml} </div>
                 `;
                 body.appendChild(row);
             });
