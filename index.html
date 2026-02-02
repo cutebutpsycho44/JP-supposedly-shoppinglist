@@ -133,21 +133,22 @@
             position: fixed; bottom: 0; left: 0; width: 100%; height: 90px; 
             background: var(--text-main); color: white;
             display: flex; justify-content: space-between; align-items: center; 
-            padding: 0 25px 10px 25px; /* เพิ่ม padding ล่างนิดนึงให้ดูไม่ชิดขอบจอเกินไป */
+            padding: 0 25px 10px 25px; 
             box-sizing: border-box;
             box-shadow: 0 -5px 20px rgba(0,0,0,0.15); z-index: 800;
             border-top-left-radius: 24px; border-top-right-radius: 24px;
         }
         .total-left { display: flex; align-items: center; gap: 12px; }
         
-        /* ปุ่ม Clear All */
+        /* ปุ่ม Clear All (Trash Icon) */
         .btn-clear-all {
-            width: 36px; height: 36px; border-radius: 50%;
+            width: 40px; height: 40px; border-radius: 50%;
             background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
             color: white; display: flex; align-items: center; justify-content: center;
             cursor: pointer; transition: all 0.2s;
         }
         .btn-clear-all:active { transform: scale(0.9); background: var(--danger); border-color: var(--danger); }
+        .btn-clear-all svg { width: 20px; height: 20px; } /* ขนาดไอคอน SVG */
         
         .total-label { font-size: 0.8rem; font-weight: 500; color: #BDC3C7; text-transform: uppercase; letter-spacing: 1px; }
         .total-amount { text-align: right; }
@@ -231,7 +232,10 @@
     <div class="total-bar">
         <div class="total-left">
             <button class="btn-clear-all" onclick="clearAllCart()" title="Clear All Items">
-                <i class="fas fa-trash-alt"></i>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
             </button>
             <div class="total-label">Total (Vat Inc)</div>
         </div>
@@ -323,7 +327,7 @@
                 boughtSet.clear();
                 localStorage.setItem('jp_shop_bought_ids', JSON.stringify([]));
                 updateTotalBar();
-                renderGroupedList(allProducts); // Re-render to update UI status
+                renderGroupedList(allProducts);
             }
         }
 
@@ -482,12 +486,12 @@
         window.closeModal = (e) => { 
             if(e.target.id === 'groupModal') {
                 document.getElementById('groupModal').classList.remove('active');
-                renderGroupedList(allProducts); // Refresh main list status on close
+                renderGroupedList(allProducts); 
             }
         }
         window.closeModalDirect = () => {
             document.getElementById('groupModal').classList.remove('active');
-            renderGroupedList(allProducts); // Refresh main list status on close
+            renderGroupedList(allProducts); 
         }
 
         window.openImageViewer = (src) => {
