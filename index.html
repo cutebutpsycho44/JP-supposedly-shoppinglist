@@ -95,9 +95,9 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
             transition: all 0.2s; position: relative; overflow: hidden;
         }
-        .item-card.all-bought { opacity: 0.6; background: #F0F9F4; border-color: var(--success); }
-        .item-card.all-bought .item-name { text-decoration: line-through; color: #95A5A6; }
-
+        .item-card.all-bought { opacity: 1; background: #F0F9F4; border-color: var(--success); }
+        /* Removed strikethrough because now we focus on qty */
+        
         .emoji-thumb {
             width: 50px; height: 50px; border-radius: 12px;
             background: #F0F2F5; display: flex; align-items: center; justify-content: center;
@@ -123,10 +123,19 @@
         .progress-circle {
             width: 40px; height: 40px; border-radius: 50%; border: 2px solid #E0E0E0; flex-shrink: 0;
             display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: #95A5A6;
-            background: white; transition: all 0.2s;
+            background: white; transition: all 0.2s; position: relative;
         }
         .item-card.all-bought .progress-circle { background: var(--success); border-color: var(--success); color: white; }
         .progress-circle.partial { border-color: var(--highlight); color: var(--highlight); }
+        
+        .qty-badge-main {
+            position: absolute;
+            top: -5px; right: -5px;
+            background: var(--text-main); color: white;
+            font-size: 0.65rem; width: 18px; height: 18px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            border: 2px solid white;
+        }
 
         /* Total Bar & Clear Button */
         .total-bar {
@@ -148,7 +157,7 @@
             cursor: pointer; transition: all 0.2s;
         }
         .btn-clear-all:active { transform: scale(0.9); background: var(--danger); border-color: var(--danger); }
-        .btn-clear-all svg { width: 20px; height: 20px; } /* ขนาดไอคอน SVG */
+        .btn-clear-all svg { width: 20px; height: 20px; } 
         
         .total-label { font-size: 0.8rem; font-weight: 500; color: #BDC3C7; text-transform: uppercase; letter-spacing: 1px; }
         .total-amount { text-align: right; }
@@ -192,10 +201,29 @@
         .price-novat { background: #F5F5F5; border: 1px solid #757575; color: #616161; padding: 4px 10px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; width: fit-content; }
         .remark-badge { font-size: 0.75rem; color: #E67E22; background: #FDF2E9; border: 1px solid #FAD7A0; padding: 4px 10px; border-radius: 6px; display: inline-block; font-weight: 600; margin-top: 8px; }
 
-        /* Checkbox in Modal */
+        /* QTY Control (New) */
         .variant-action { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-left: 5px; }
-        .btn-add-variant { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #E0E0E0; background: white; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #E0E0E0; font-size: 1.2rem; transition: all 0.2s; }
-        .btn-add-variant.active { background: var(--success); border-color: var(--success); color: white; transform: scale(1.1); box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3); }
+        .qty-control {
+            display: flex; align-items: center; gap: 8px;
+            background: #F0F2F5; padding: 4px; border-radius: 30px;
+        }
+        .qty-btn {
+            width: 32px; height: 32px; border-radius: 50%; border: none;
+            background: white; color: var(--text-main);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 0.9rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: all 0.1s;
+        }
+        .qty-btn:active { transform: scale(0.9); }
+        .qty-btn.plus { background: var(--text-main); color: white; }
+        .qty-val {
+            font-size: 1.1rem; font-weight: 700; min-width: 25px; text-align: center;
+        }
+        .qty-active-indicator {
+            font-size: 0.7rem; color: var(--success); font-weight: 700;
+            margin-top: 5px;
+        }
 
         /* Image Viewer & Loading */
         .img-viewer-modal { background: rgba(0,0,0,0.9) !important; z-index: 1100; backdrop-filter: blur(8px); }
@@ -237,7 +265,7 @@
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                 </svg>
             </button>
-            <div class="total-label">Total (Vat Inc)</div>
+            <div class="total-label">Total (Qty x Price)</div>
         </div>
         <div class="total-amount">
             <span id="totalJPY" class="total-jpy">¥0</span>
@@ -266,7 +294,21 @@
         const emojis = ['🛍️', '🎁', '🎀', '💖', '⭐', '✨', '🛒', '💄', '🧸', '🍡', '🍫', '🎌', '🌸', '🍵', '🧴'];
 
         let allProducts = [];
-        let boughtSet = new Set(JSON.parse(localStorage.getItem('jp_shop_bought_ids')) || []);
+        // Change from Set to Object (Map-like) for ID: Quantity
+        let cartItems = JSON.parse(localStorage.getItem('jp_shop_cart')) || {};
+
+        // Migrate old data if exists (converts old Set to Qty=1)
+        const oldData = localStorage.getItem('jp_shop_bought_ids');
+        if(oldData) {
+            try {
+                const oldSet = JSON.parse(oldData);
+                if(Array.isArray(oldSet) && oldSet.length > 0) {
+                    oldSet.forEach(id => { if(!cartItems[id]) cartItems[id] = 1; });
+                    localStorage.setItem('jp_shop_cart', JSON.stringify(cartItems));
+                    localStorage.removeItem('jp_shop_bought_ids'); // Clean up
+                }
+            } catch(e) {}
+        }
 
         function init() {
             setTimeout(() => {
@@ -308,13 +350,16 @@
 
         function updateTotalBar() {
             let totalJPY = 0;
-            boughtSet.forEach(id => {
+            
+            Object.keys(cartItems).forEach(id => {
                 const item = allProducts.find(p => p._id === id);
-                if (item && item.JPY) {
+                const qty = cartItems[id];
+                if (item && item.JPY && qty > 0) {
                     const price = parseFloat(item.JPY.replace(/,/g, ''));
-                    if (!isNaN(price)) totalJPY += price;
+                    if (!isNaN(price)) totalJPY += (price * qty);
                 }
             });
+
             const totalTHB = Math.round(totalJPY * RATE);
             document.getElementById('totalJPY').innerText = `¥${totalJPY.toLocaleString()}`;
             document.getElementById('totalTHB').innerText = `฿${totalTHB.toLocaleString()}`;
@@ -322,10 +367,10 @@
 
         // --- Clear All Cart Function ---
         window.clearAllCart = () => {
-            if (boughtSet.size === 0) return;
+            if (Object.keys(cartItems).length === 0) return;
             if (confirm("⚠️ Are you sure you want to clear all items from the cart?")) {
-                boughtSet.clear();
-                localStorage.setItem('jp_shop_bought_ids', JSON.stringify([]));
+                cartItems = {};
+                localStorage.setItem('jp_shop_cart', JSON.stringify(cartItems));
                 updateTotalBar();
                 renderGroupedList(allProducts);
             }
@@ -344,10 +389,21 @@
 
             Object.keys(groupedByName).sort().forEach(name => {
                 const items = groupedByName[name];
-                const totalItems = items.length;
-                const boughtCount = items.filter(i => boughtSet.has(i._id)).length;
-                const isAllBought = boughtCount === totalItems && totalItems > 0;
-                const isPartial = boughtCount > 0 && !isAllBought;
+                const totalVariants = items.length;
+                
+                // Logic: Count how many variants have Qty > 0
+                let boughtVariantsCount = 0;
+                let totalQtyInGroup = 0;
+
+                items.forEach(i => {
+                    if(cartItems[i._id] && cartItems[i._id] > 0) {
+                        boughtVariantsCount++;
+                        totalQtyInGroup += cartItems[i._id];
+                    }
+                });
+
+                const isAllBought = boughtVariantsCount === totalVariants && totalVariants > 0;
+                const isPartial = boughtVariantsCount > 0 && !isAllBought;
 
                 const randomEmoji = getRandomEmoji();
                 const locations = [...new Set(items.map(i => i.Location || 'General'))].join(', ');
@@ -357,10 +413,18 @@
                 card.id = `group-${name.replace(/\s+/g, '-')}`; 
                 
                 let progressHtml = '';
+                let qtyBadgeHtml = totalQtyInGroup > 0 ? `<div class="qty-badge-main">${totalQtyInGroup}</div>` : '';
+
                 if(isAllBought) {
-                    progressHtml = `<div class="progress-circle"><i class="fas fa-check"></i></div>`;
+                    progressHtml = `<div class="progress-circle">
+                        <i class="fas fa-check"></i>
+                        ${qtyBadgeHtml}
+                    </div>`;
                 } else if (isPartial) {
-                    progressHtml = `<div class="progress-circle partial">${boughtCount}/${totalItems}</div>`;
+                    progressHtml = `<div class="progress-circle partial">
+                        ${boughtVariantsCount}/${totalVariants}
+                        ${qtyBadgeHtml}
+                    </div>`;
                 } else {
                     progressHtml = `<div class="progress-circle"></div>`;
                 }
@@ -381,18 +445,24 @@
             });
         }
 
-        window.toggleVariant = (id, btn) => {
-            if(boughtSet.has(id)) {
-                boughtSet.delete(id);
-                btn.classList.remove('active');
-                btn.innerHTML = '<i class="fas fa-plus"></i>';
-            } else {
-                boughtSet.add(id);
-                btn.classList.add('active');
-                btn.innerHTML = '<i class="fas fa-check"></i>';
+        // New function to update quantity
+        window.updateQty = (id, delta) => {
+            if(!cartItems[id]) cartItems[id] = 0;
+            cartItems[id] += delta;
+            
+            if(cartItems[id] <= 0) {
+                delete cartItems[id];
             }
-            localStorage.setItem('jp_shop_bought_ids', JSON.stringify([...boughtSet]));
+            
+            localStorage.setItem('jp_shop_cart', JSON.stringify(cartItems));
             updateTotalBar();
+            
+            // Update UI inside Modal immediately
+            const qtyDisplay = document.getElementById(`qty-val-${id}`);
+            if(qtyDisplay) {
+                const newQty = cartItems[id] || 0;
+                qtyDisplay.innerText = newQty;
+            }
         };
 
         const searchInput = document.getElementById('searchInput');
@@ -457,7 +527,7 @@
                     remarkHtml = `<div class="remark-container"><span class="remark-badge">ℹ️ ${item[targetKey]}</span></div>`;
                 }
 
-                const isBought = boughtSet.has(item._id);
+                const currentQty = cartItems[item._id] || 0;
 
                 const row = document.createElement('div');
                 row.className = 'variant-item';
@@ -472,9 +542,15 @@
                         ${remarkHtml}
                     </div>
                     <div class="variant-action">
-                        <button class="btn-add-variant ${isBought ? 'active' : ''}" onclick="toggleVariant('${item._id}', this)">
-                            ${isBought ? '<i class="fas fa-check"></i>' : '<i class="fas fa-plus"></i>'}
-                        </button>
+                        <div class="qty-control">
+                            <button class="qty-btn" onclick="updateQty('${item._id}', -1)">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <span class="qty-val" id="qty-val-${item._id}">${currentQty}</span>
+                            <button class="qty-btn plus" onclick="updateQty('${item._id}', 1)">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
                     </div>
                 `;
                 body.appendChild(row);
